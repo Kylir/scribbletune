@@ -2,10 +2,11 @@ import { isNote, shuffle, expandStr } from './utils';
 import { getChord } from './chord';
 
 /* tslint:disable:no-var-requires */
-const browserClip = typeof window !== 'undefined' && require('./browserClip');
+const browserClip =
+  typeof window !== 'undefined' && require('./browserClip').browserClip;
 
 /**
- * Get defauly params for a clip, such as root note, pattern etc
+ * Get default params for a clip, such as root note, pattern etc
  * @return {Object}
  */
 const getDefaultParams = (): ClipParams => ({
@@ -19,6 +20,8 @@ const getDefaultParams = (): ClipParams => ({
   amp: 100,
   accentLow: 70,
   randomNotes: null,
+  effects: [],
+  offlineRendering: false,
 });
 
 /**
@@ -68,10 +71,14 @@ export const clip = (params: ClipParams) => {
       return el;
     }
 
-    if (!Array.isArray(el) && getChord(el)) {
-      el = getChord(el);
-      return el;
+    if (!Array.isArray(el)) {
+      const chord = getChord(el);
+      if (chord && chord.length) {
+        return chord;
+      }
     }
+
+    throw new Error(`Chord ${el} not found`);
   });
 
   if (/[^x\-_\[\]R]/.test(params.pattern)) {
